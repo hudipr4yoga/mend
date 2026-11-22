@@ -1,3 +1,6 @@
+[![hidden-spec-cli](https://make.fun/badge/hidden-spec-cli-01-run-20261122.svg)](https://make.fun/)
+[![rank](https://make.fun/badge/hidden-spec-cli-01-run-20261122/hudipr4yoga/mend/rank.svg)](https://make.fun/)
+[![reward](https://make.fun/badge/hidden-spec-cli-01-run-20261122/hudipr4yoga/mend/reward.svg)](https://make.fun/)
 # mend: one patch tool for every AI edit format
 
 `mend` is one command-line tool that applies the edits AI models write, in four formats, to a tree of files.
