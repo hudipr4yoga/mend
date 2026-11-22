@@ -264,6 +264,10 @@ interface USection {
   diffNew: string | null;
   pairOld: string | null;
   pairNew: string | null;
+  /** True once a ---/+++ pair was seen. Needed to tell a pair of /dev/null
+   *  (pairOld/pairNew null because the path is /dev/null) apart from no
+   *  pair at all (null because nothing named the path): only the latter
+   *  falls back to the rename/diff --git paths. */
   sawPair: boolean;
   renameFrom: string | null;
   renameTo: string | null;
@@ -422,8 +426,12 @@ function applyUnifiedHunk(f: FileLines, h: UHunk, d: number, maxTier: number, pa
 
 function unifiedEdit(sec: USection, maxTier: number): Edit {
   return (tree) => {
-    const oldP = sec.pairOld ?? sec.renameFrom ?? sec.diffOld;
-    const newP = sec.pairNew ?? sec.renameTo ?? sec.diffNew;
+    // SPEC section 6: the pair names the paths when there is one — a pair
+    // of /dev/null means "no file", so the diff --git paths are NOT a
+    // fallback for it ("the diff --git paths are used when nothing else
+    // names one"). Only when there is no pair do rename/diff paths apply.
+    const oldP = sec.sawPair ? sec.pairOld : (sec.renameFrom ?? sec.diffOld);
+    const newP = sec.sawPair ? sec.pairNew : (sec.renameTo ?? sec.diffNew);
     let kind: 'create' | 'delete' | 'move' | 'change';
     if (sec.newFile) kind = 'create';
     else if (sec.delFile) kind = 'delete';
