@@ -690,12 +690,19 @@ function parseV4A(lines: string[], maxTier: number): Edit[] {
         throw new Exit2(`error: parse ${i + 1}`);
       }
       finish(false);
-      if (chunks.length > 0) {
+      if (chunks.length > 0 && !chunks[chunks.length - 1]!.eof) {
         const lastCh = chunks[chunks.length - 1]!;
         while (lastCh.bodyRaw.length > 0 && blank(lastCh.bodyRaw[lastCh.bodyRaw.length - 1]!)) lastCh.bodyRaw.pop();
         const rebuilt = buildVChunk(lastCh.anchor, lastCh.bodyRaw, lastCh.eof);
         lastCh.o = rebuilt.o;
         lastCh.n = rebuilt.n;
+      }
+      // A blank-only Update section has no chunk: drop anchorless chunks
+      // left empty by the trim above (SPEC §8), so the parse check below fires.
+      // Anchored chunks with an empty body stay: they are a real chunk.
+      for (let k = chunks.length - 1; k >= 0; k--) {
+        const ch = chunks[k]!;
+        if (ch.anchor === null && ch.o.length === 0 && ch.n.length === 0) chunks.splice(k, 1);
       }
       if (chunks.length === 0 && moveTo === null) throw new Exit2(`error: parse ${updateLine}`);
       edits.push(v4aEdit({ kind: 'update', path, lines: [], moveTo, chunks }, maxTier));
